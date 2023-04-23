@@ -116,8 +116,14 @@
   <img src="test.jpg" loading="lazy" />
   ```
 
-
-
+##### CSRF
+>跨站请求伪造（英语：Cross-site request forgery），也被称为 one-click attack 或者 session riding，通常缩写为 CSRF 或者 XSRF， 
+> 是一种挟制用户在当前已登录的 Web 应用程序上执行非本意的操作的攻击方法。
+> 跟跨网站脚本（XSS）相比，XSS 利用的是用户对指定网站的信任，CSRF 利用的是网站对用户网页浏览器的信任。
+> 
+- 使用 JSON API。当进行 CSRF 攻击时，请求体通过 `<form>` 构建，请求头为 application/www-form-urlencoded。它难以发送 JSON 数据被服务器所理解。
+- CSRF Token。生成一个随机的 token，切勿放在 cookie 中，每次请求手动携带该 token 进行校验。
+- SameSite Cookie。设置为 Lax 或者 Strict，禁止发送第三方 Cookie。
 #### JS
 1. 闭包和作用域
 >闭包是作用域应用的特殊场景。 js中常见的作用域包括全局作用域、函数作用域、块级作用域。要知道 **Js中自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方**。 常见的闭包使用有两种场景：一种是函数作为参数被传递；一种是函数作为返回值被返回。
