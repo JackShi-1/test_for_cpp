@@ -1,5 +1,5 @@
 #### h5 & css
-1. 水平垂直居中方案
+##### 1. 水平垂直居中方案
 - flex布局
    ```css
     .father {
@@ -38,6 +38,83 @@
     }
     ```
 
+##### 2. 图片懒加载
+>1.如何判断图片出现在了当前视口 （即如何判断我们能够看到图片）
+2.如何控制图片的加载
+- 方案一：位置计算 + 滚动事件 (Scroll) + DataSet API
+  - 判断在当前视口:`clientTop`，`offsetTop`，`clientHeight` 以及  `scrollTop` 各种关于图片的高度作比对
+  - 监听 `window.scroll` 事件
+  - `DataSet API`控制图片
+- 方案二 [improve]：getBoundingClientRect API + Scroll with Throttle + DataSet API
+  - `Element.getBoundingClientRect()` 方法返回元素的大小及其相对于视口的位置
+  - 加入节流 优化监听时间
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片懒加载</title>
+    <style>
+      img {
+        width: 100%;
+        height: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <img
+      src="test01.jpg"
+      alt="1"
+    />
+    <img
+      src="test02.jpg"
+      alt="2"
+    />
+    <img
+      data-src="test03.jpg"
+      alt="3"
+    />
+    <img
+      data-src="test04jpg"
+      alt="4"
+    />
+    <img
+      data-src="test05.jpg"
+      alt="5"
+    />
+    <img
+      data-src="test06.jpg"
+      alt="6"
+    />
+    <script src="https://cdn.bootcdn.net/ajax/libs/lodash.js/4.17.20/lodash.js"></script>
+    <script>
+      const images = document.querySelectorAll("img");
+      const lazyLoad = () => {
+        images.forEach((item) => {
+          // 触发条件为img元素的CSSOM对象到视口顶部的距离 < 100px + 视口高度，+100px为了提前触发图片加载
+          if (
+            item.getBoundingClientRect().top <
+            document.documentElement.clientHeight + 100
+          ) {
+            if ("src" in item.dataset) {
+              item.src = item.dataset.src;
+            }
+          }
+        });
+      };
+      document.addEventListener("scroll", _.throttle(lazyLoad, 200));
+    </script>
+  </body>
+</html>
+```
+- 方案三：`IntersectionObserver` API + DataSet API
+  - `IntersectionObserver` API，一个能够监听元素是否到了当前视口的事件，一步到位！
+  - `IntersectionObserver` 除了给图片做懒加载外，还可以对单页应用资源做预加载
+- 方案四：`LazyLoading` 属性 浏览器属性
+  ```html
+  <img src="test.jpg" loading="lazy" />
+  ```
 
 
 
