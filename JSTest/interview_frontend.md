@@ -10,6 +10,15 @@
     .son {
         ...
     }
+
+    // 方法二
+    .box {
+      display: flex;
+    }
+
+    .item {
+      margin: auto;
+    }
     ```
 - margin:auto + 绝对定位
     ```css
@@ -37,6 +46,21 @@
         transform: translate(-50%, -50%);
     }
     ```
+- Grid布局
+   ```css
+  .father {
+    height: 100%;
+    display: grid;
+  }
+  .son { /* thing to center */
+    margin: auto;
+  }
+
+  // 一维布局
+  // justify-content||justify-items && align-content||align-items
+  // place-content||place-items 
+
+   ```
 
 ##### 2. 图片懒加载
 >1.如何判断图片出现在了当前视口 （即如何判断我们能够看到图片）
