@@ -154,50 +154,49 @@
 - em: 根据自身元素的 font-size
 - vw: viewport width
 - vh: viewport height
-#### JS
-1. 闭包和作用域
->闭包是作用域应用的特殊场景。 js中常见的作用域包括全局作用域、函数作用域、块级作用域。要知道 **Js中自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方**。 常见的闭包使用有两种场景：一种是函数作为参数被传递；一种是函数作为返回值被返回。
 
 
 
-#### TS
-1. type和interface的区别
->interface可以重复声明，type不行，继承方式不一样，type使用交叉类型方式，interface使用extends实现。在对象扩展的情况下，使用接口继承要比交叉类型的性能更好。建议使用interface来描述对象对外暴露的借口，使用type将一组类型重命名（或对类型进行复杂编程）
-```typescript
-interface iMan {
-  name: string;
-  age: number;
-}
-// 接口可以进行声明合并
-interface iMan {
-  hobby: string;
-}
+#### 浏览器相关
+##### 1. cookie相关
+###### 什么是cookie？
+>HTTP Cookie（也叫 Web Cookie 或浏览器 Cookie）是服务器发送到用户浏览器并保存在本地的一小块数据，它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上。通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。Cookie 使基于无状态的 HTTP 协议记录稳定的状态信息成为了可能。
+###### 如何设置一个cookie
+> 服务端：通过 setCookie 的响应头来设置 cookie 的，要设置多个 cookie 时，得多写几个 setCookie。服务器如果希望在浏览器保存 Cookie，就要在 HTTP 回应的头信息里面，放置一个 Set-Cookie 字段。
+> 前端：使用 *`document.cookie`* 属性来读写当前网页的 Cookie。写入的时候，Cookie 的值必须写成 key=value 的形式
+> Cookie 曾一度用于客户端数据的存储，因当时并没有其它合适的存储办法而作为唯一的存储手段，但现在随着现代浏览器开始支持各种各样的存储方式，Cookie 渐渐被淘汰。由于服务器指定 Cookie 后，浏览器的每次请求都会携带 Cookie 数据，会带来额外的性能开销（尤其是在移动环境下）。新的浏览器 API 已经允许开发者直接将数据存储到本地，如使用 Web storage API （本地存储和会话存储）或 IndexedDB
 
-type tMan = {
-  name: string;
-  age: number;
-};
-// type不能重复定义
-// type tMan = {}
-
-// 继承方式不同,接口继承使用extends
-interface iManPlus extends iMan {
-  height: string;
-}
-// type继承使用&，又称交叉类型
-type tManPlus = { height: string } & tMan;
-
-const aMan: iManPlus = {
-  name: "aa",
-  age: 15,
-  height: "175cm",
-  hobby: "eat",
-};
-
-const bMan: tManPlus = {
-  name: "bb",
-  age: 15,
-  height: "150cm",
-};
+###### 如何删除一个cookie
+>前端一般不操作，服务端操作
+>通过把该 cookie 的过期时间改为过去时即可删除成功，具体操作的话可以通过操作两个字段来完成
+>- max-age: 将要过期的最大秒数，设置为 -1 即可删除
+>- expires: 将要过期的绝对时间，存储到 cookies 中需要通过 date.toUTCString() 处理，设置为过期时间即可删除
+```js
+// max-age 设置为 -1 即可成功
+document.cookie = "a=3; max-age=-1";
 ```
-1. 
+
+###### 当 cookie 没有设置 maxage 时，cookie 会存在多久
+> 不设置 max-age 和 expires，此 cookie 就是会话级别的，浏览器关闭就没了
+
+###### 浏览器cookie有哪些字段
+>- Domain
+>- Path
+>- Expire/MaxAge
+>- HttpOnly
+>- Secure
+>- SameSite
+
+##### 2. 关于 sessionStorage 与 localStorage 
+
+###### 有何区别
+>localStorage 生命周期是永久除非自主清除 
+> sessionStorage 生命周期为当前窗口或标签页，关闭窗口或标签页则会清除数据
+
+>均只能存储字符串类型的对象
+
+- 不同浏览器无法共享 localStorage 或 sessionStorage 中的信息。
+- 相同浏览器的不同页面间可以共享相同的 localStorage（页面属于相同域名和端口），但是不同页面或标签页间无法共享 sessionStorage 的信息。
+- 这里需要注意的是，页面及标签页仅指顶级窗口，如果一个标签页包含多个 iframe 标签且他们属于同源页面，那么他们之间是可以共享 sessionStorage 的。
+
+##### 3. 关于跨域
