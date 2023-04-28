@@ -155,6 +155,27 @@
 - vw: viewport width
 - vh: viewport height
 
+##### 5. BFC
+>块格式化上下文（Block Formatting Context，BFC）是Web页面的可视化CSS渲染的一部分，是布局过程中生成块级盒子的区域，也是浮动元素与其他元素的交互限定区域。
+
+>- BFC 是一个独立的布局环境,可以理解为一个容器,在这个容器中按照一定规则进行物品摆放,并且不会影响其它环境中的物品。
+>- 如果一个元素符合触发 BFC 的条件，则 BFC 中的元素布局不受外部影响。
+>- 浮动元素会创建 BFC，则浮动元素内部子元素主要受该浮动元素影响，所以两个浮动元素之间是互不影响的。
+
+- 创建条件
+  - 根元素或包含根元素的元素
+  - 浮动元素 float ＝ left | right 或 inherit（≠ none）
+  - 绝对定位元素 position ＝ absolute 或 fixed
+  - display ＝ inline-block | flex | inline-flex | table-cell 或 table-caption
+  - overflow ＝ hidden | auto 或 scroll (≠ visible)
+
+- 消除浮动 解决高度塌陷问题（脱离文档流，无法计算准确高度）
+  - 解决方法：
+    - 在容器中创建BFC
+    - `overflow: hidden`,会造成溢出隐藏，影响与JS交互效果
+    - clearfix
+
+
 
 
 #### 浏览器相关
@@ -188,7 +209,6 @@ document.cookie = "a=3; max-age=-1";
 >- SameSite
 
 ##### 2. 关于 sessionStorage 与 localStorage 
-
 ###### 有何区别
 >localStorage 生命周期是永久除非自主清除 
 > sessionStorage 生命周期为当前窗口或标签页，关闭窗口或标签页则会清除数据
@@ -200,3 +220,32 @@ document.cookie = "a=3; max-age=-1";
 - 这里需要注意的是，页面及标签页仅指顶级窗口，如果一个标签页包含多个 iframe 标签且他们属于同源页面，那么他们之间是可以共享 sessionStorage 的。
 
 ##### 3. 关于跨域
+###### 什么是跨域
+**协议，域名，端口**，三者有一不一样，就是跨域
+例子🌰：www.baidu.com 与 zhidao.baidu.com 是跨域
+###### 如何解决跨域
+目前有两种最常见的解决方案：
+- CORS，在服务器端设置几个响应头，如 Access-Control-Allow-Origin: *
+- Reverse Proxy，在 nginx/traefik/haproxy 等反向代理服务器中设置为同一域名
+- JSONP，详解见 [JSONP 的原理是什么，如何实现](https://github.com/shfshanyue/Daily-Question/issues/447)
+  - 只能处理 GET 跨域，虽然现在基本上都使用 CORS 跨域
+  - 基于两个原理:
+    - 动态创建 script，使用 script.src 加载请求跨过跨域
+    - script.src 加载的脚本内容为 JSONP: 即 PADDING(JSON) 格式
+  - 使用 JSONP 跨域同样需要服务端的支持
+  - `$ curl https://shanyue.tech/api/user?id=100&callback=padding`
+
+##### 4. 如何取消请求的发送
+- XHR 使用 `xhr.abort()`
+- fetch 使用 `AbortController`
+  - 发送请求时使用一个 signal 选项控制 fetch 请求
+  - `control.abort()` 用以取消请求发送
+  - 取消请求发送之后会得到异常 `AbortError`
+- Axios:`xhr` 与 `http/https`
+  - `Axios` 中通过 `cancelToken` 取消请求发送
+
+##### 5. 如何统计当前页面出现的所有标签
+- `document.querySelectorAll('*')`
+- `document.getElementsByTagName('*')`
+- `$$('*')`，可在浏览器控制台使用
+- `document.all`，已废弃，不建议使用
