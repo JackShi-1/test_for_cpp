@@ -464,4 +464,415 @@ for (i of obj) {
 // 原理：可迭代对象都拥有@@iterator属性
 ```
 
+#### 一系列代码题
+##### 1.0 异步相关
+###### Q1
+```js
+const promise = new Promise((resolve, reject) => {
+  console.log(1);
+  console.log(2);
+});
+promise.then(() => {
+  console.log(3);
+});
+console.log(4);
+
+// 1 
+// 2 
+// 4
+```
+> `promise.then`是微任务，它会在所有的宏任务执行完之后才会执行，同时需要`promise`内部的状态发生变化，因为这里内部没有发生变化，一直处于`pending`状态，所以不输出3。
+
+###### Q2
+```js
+const promise1 = new Promise((resolve, reject) => {
+  console.log('promise1')
+  resolve('resolve1')
+})
+const promise2 = promise1.then(res => {
+  console.log(res)
+})
+console.log('1', promise1);
+console.log('2', promise2);
+
+// promise1
+// 1 Promise{<resolved>: resolve1}
+// 2 Promise{<pending>}
+// resolve1
+```
+> 需要注意的是，直接打印promise1，会打印出它的状态值和参数。
+>- `script`是一个宏任务，按照顺序执行这些代码；
+>- 首先进入`Promise`，执行该构造函数中的代码，打印`promise1`；
+>- 碰到`resolve`函数, 将`promise1`的状态改变为`resolved`, 并将结果保存下来；
+>- 碰到`promise1.then`这个微任务，将它放入微任务队列；
+>- `promise2`是一个新的状态为`pending`的`Promise`；
+>- 执行同步代码1， 同时打印出`promise1`的状态是`resolved`；
+>- 执行同步代码2，同时打印出`promise2`的状态是`pending`；
+>- 宏任务执行完毕，查找微任务队列，发现`promise1.then`这个微任务且状态为`resolved`，执行它。
+
+###### Q3
+```js
+const promise = new Promise((resolve, reject) => {
+  console.log(1);
+  setTimeout(() => {
+    console.log("timerStart");
+    resolve("success");
+    console.log("timerEnd");
+  }, 0);
+  console.log(2);
+});
+promise.then((res) => {
+  console.log(res);
+});
+console.log(4);
+
+// 1
+// 2
+// 4
+// timerStart
+// timerEnd
+// success
+```
+>- 首先遇到Promise构造函数，会先执行里面的内容，打印1；
+>- 遇到定时器steTimeout，它是一个宏任务，放入宏任务队列；
+继续向下执行，打印出2；
+>- 由于Promise的状态此时还是pending，所以promise.then先不执行；
+>- 继续执行下面的同步任务，打印出4；
+>- 此时微任务队列没有任务，继续执行下一轮宏任务，执行steTimeout；
+>- 首先执行timerStart，然后遇到了resolve，将promise的状态改为resolved且保存结果并将之前的promise.then推入微任务队列，再执行timerEnd；
+>- 执行完这个宏任务，就去执行微任务promise.then，打印出resolve的结果。
+
+###### **Q4**
+```js
+Promise.resolve().then(() => {
+  console.log('promise1');
+  const timer2 = setTimeout(() => {
+    console.log('timer2')
+  }, 0)
+});
+const timer1 = setTimeout(() => {
+  console.log('timer1')
+  Promise.resolve().then(() => {
+    console.log('promise2')
+  })
+}, 0)
+console.log('start');
+
+// start
+// promise1
+// timer1
+// promise2
+// timer2
+```
+>- 首先，`Promise.resolve().then`是一个微任务，加入微任务队列
+>- 执行`timer1`，它是一个宏任务，加入宏任务队列
+>- 继续执行下面的同步代码，打印出`start`
+>- 这样第一轮宏任务就执行完了，开始执行微任务`Promise.resolve().then`，打印出`promise1`
+>- 遇到`timer2`，它是一个宏任务，将其加入宏任务队列，此时宏任务队列有两个任务，分别是`timer1`、`timer2`；
+>- 这样第一轮微任务就执行完了，开始执行第二轮宏任务，首先执行定时器timer1，打印`timer1`；
+>- 遇到`Promise.resolve().then`，它是一个微任务，加入微任务队列
+>- 开始执行微任务队列中的任务，打印`promise2`；
+>- 最后执行宏任务`timer2`定时器，打印出`timer2`；
+
+###### Q5
+```js
+const promise1 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('success')
+  }, 1000)
+})
+const promise2 = promise1.then(() => {
+  throw new Error('error!!!')
+})
+console.log('promise1', promise1)
+console.log('promise2', promise2)
+setTimeout(() => {
+  console.log('promise1', promise1)
+  console.log('promise2', promise2)
+}, 2000)
+
+// promise1 Promise {<pending>}
+// promise2 Promise {<pending>}
+
+// Uncaught (in promise) Error: error!!!
+// promise1 Promise {<fulfilled>: "success"}
+// promise2 Promise {<rejected>: Error: error!!}
+```
+
+###### Q6
+```js
+Promise.resolve().then(() => {
+  return new Error('error!!!')
+}).then(res => {
+  console.log("then: ", res)
+}).catch(err => {
+  console.log("catch: ", err)
+})
+// then:  Error: error!!!
+```
+> 返回任意一个非 `promise` 的值都会被包裹成 `promise` 对象，因此这里的`return new Error('error!!!')`也被包裹成了`return Promise.resolve(new Error('error!!!'))`，因此它会被`then`捕获而不是`catch`。
+>
+
+###### Q7 `finally`
+```js
+Promise.resolve('1')
+  .then(res => {
+    console.log(res)
+  })
+  .finally(() => {
+    console.log('finally')
+  })
+Promise.resolve('2')
+  .finally(() => {
+    console.log('finally2')
+  	return '我是finally2返回的值'
+  })
+  .then(res => {
+    console.log('finally2后面的then函数', res)
+  })
+
+// 1
+// finally2
+// finally
+// finally2后面的then函数 2
+```
+>- `.finally()`一般用的很少，只要记住以下几点就可以了：
+>- `.finally()`方法不管Promise对象最后的状态如何都会执行
+>- `.finally()`方法的回调函数不接受任何的参数，也就是说你在`.finally()`函数中是无法知道`Promise`最终的状态是`resolved`还是`rejected`的
+>- 它最终返回的默认会是一个上一次的`Promise`对象值，不过如果抛出的是一个异常则返回异常的`Promise`对象。
+>- `finally`本质上是`then`方法的特例
+
+###### Q8
+```js
+function runAsync(x) {
+  const p = new Promise(r => setTimeout(() => r(x, console.log(x)), 1000))
+  return p
+}
+function runReject(x) {
+  const p = new Promise((res, rej) => setTimeout(() => rej(`Error: ${x}`, console.log(x)), 1000 * x))
+  return p
+}
+Promise.all([runAsync(1), runReject(4), runAsync(3), runReject(2)])
+  .then(res => console.log(res))
+  .catch(err => console.log(err))
+
+// // 1s后输出
+// 1
+// 3
+// // 2s后输出
+// 2
+// Error: 2
+// // 4s后输出
+// 4
+
+Promise.race([runAsync(1), runAsync(2), runAsync(3)])
+  .then(res => console.log('result: ', res))
+  .catch(err => console.log(err))
+// 1
+// 'result: ' 1
+// 2
+// 3
+```
+>- `.catch`捕获到了第一个错误，在这道题目中最先的错误就是`runReject(2)`的结果。
+>- 如果一组异步操作中有一个异常都不会进入`.then()`的第一个回调函数参数中。会被`.then()`的第二个回调函数捕获
+
+>- `then`只会捕获第一个成功的方法，其他的函数虽然还会继续执行，但是不是被`then`捕获了。
+
+###### Q9
+```js
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+}
+async function async2() {
+  console.log("async2");
+}
+async1();
+console.log('start')
+// async1 start
+// async2
+// start
+// async1 end
+```
+>代码的执行过程如下：
+>- 首先执行函数中的同步代码`async1 start`，之后遇到了`await`，它会阻塞`async1`后面代码的执行，因此会先去执行`async2`中的同步代码`async2`，然后跳出`async1`；
+>- **跳出`async1`函数后，执行同步代码`start`**；
+>- 在一轮宏任务全部执行完之后，再来执行await后面的内容async1 end。
+> 这里可以理解为await后面的语句相当于放到了new Promise中，下一行及之后的语句相当于放在Promise.then中。
+>
+###### Q10
+```js
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+  setTimeout(() => {
+    console.log('timer1')
+  }, 0)
+}
+async function async2() {
+  setTimeout(() => {
+    console.log('timer2')
+  }, 0)
+  console.log("async2");
+}
+async1();
+setTimeout(() => {
+  console.log('timer3')
+}, 0)
+console.log("start")
+// async1 start
+// async2
+// start
+// async1 end
+// timer2
+// timer3
+// timer1
+```
+>- 首先进入`async1`，打印出`async1 start`；
+>- 之后遇到`async2`，进入`async2`，遇到定时器`timer2`，加入宏任务队列，之后打印`async2`；
+>- 由于`async2`阻塞了后面代码的执行，所以执行后面的定时器`timer3`，将其加入宏任务队列，之后打印`start`；
+>- 然后执行`async2`后面的代码，打印出`async1 end`，遇到定时器`timer1`，将其加入宏任务队列；
+>- 最后，宏任务队列有三个任务，先后顺序为`timer2`，`timer3`，`timer1`，没有微任务，所以直接所有的宏任务按照先进先出的原则执行。
+
+// 看到20题
+
+##### 2.0 this指向
+
+###### Q1
+```js
+var a = 10
+var obj = {
+  a: 20,
+  say: () => {
+    console.log(this.a)
+  }
+}
+obj.say() 
+
+var anotherObj = { a: 30 } 
+obj.say.apply(anotherObj) 
+// 10
+// 10
+```
+> 箭头函数时不绑定this的，它的this来自原其父级所处的上下文，所以首先会打印全局中的 a 的值10。后面虽然让say方法指向了另外一个对象，但是仍不能改变箭头函数的特性，它的this仍然是指向全局的，所以依旧会输出10
+>
+###### Q2
+```js
+var obj = { 
+  name : 'cuggz', 
+  fun : function(){ 
+    console.log(this.name); 
+  } 
+} 
+obj.fun()     // cuggz
+new obj.fun() // undefined
+```
+> 使用`new`构造函数时，其`this`指向的是全局环境`window`
+>
+###### Q3
+```js
+var obj = {
+   say: function() {
+     var f1 = () =>  {
+       console.log("1111", this);
+     }
+     f1();
+   },
+   pro: {
+     getPro:() =>  {
+        console.log(this);
+     }
+   }
+}
+var o = obj.say;
+o();
+obj.say();
+obj.pro.getPro();
+// 1111 window对象
+// 1111 obj对象
+// window对象
+```
+> 1. `o()`，o是在全局执行的，而f1是箭头函数，它是没有绑定this的，它的this指向其父级的this，其父级say方法的this指向的是全局作用域，所以会打印出window；
+> 2. `obj.say()`，谁调用say，say 的this就指向谁，所以此时this指向的是obj对象；
+> 3. `obj.pro.getPro()`，我们知道，箭头函数时不绑定this的，getPro处于pro中，而对象不构成单独的作用域，所以箭头的函数的this就指向了全局作用域window。
+>
+###### Q4
+```js
+var length = 10;
+function fn() {
+    console.log(this.length);
+}
+ 
+var obj = {
+  length: 5,
+  method: function(fn) {
+    fn();
+    arguments[0]();
+  }
+};
+ 
+obj.method(fn, 1);
+// 10 2
+```
+> 1. 第一次执行fn()，this指向window对象，输出10。
+> 2. 第二次执行arguments0，相当于arguments调用方法，this指向arguments，而这里传了两个参数，故输出arguments长度为2。
+>
+###### Q5
+```js
+var a = 1;
+function printA(){
+  console.log(this.a);
+}
+var obj={
+  a:2,
+  foo:printA,
+  bar:function(){
+    printA();
+  }
+}
+
+obj.foo(); // 2
+obj.bar(); // 1
+var foo = obj.foo;
+foo(); // 1
+```
+
+
+>- `obj.foo()`，foo 的this指向obj对象，所以a会输出2；
+>- `obj.bar()`，printA在bar方法中执行，所以此时printA的this指向的是window，所以会输出1；
+>- `foo()`，foo是在全局对象中执行的，所以其this指向的是window，所以会输出1；
+
+###### Q6
+```js
+var x = 3;
+var y = 4;
+var obj = {
+    x: 1,
+    y: 6,
+    getX: function() {
+        var x = 5;
+        return function() {
+            return this.x;
+        }();
+    },
+    getY: function() {
+        var y = 7;
+        return this.y;
+    }
+}
+console.log(obj.getX()) // 3
+console.log(obj.getY()) // 6
+```
+>- **匿名函数**的this是指向全局对象的，所以this指向window，会打印出3；
+>- getY是由obj调用的，所以其this指向的是obj对象，会打印出6。
+
+> this绑定的优先级：**new绑定 > 显式绑定 > 隐式绑定 > 默认绑定**。
+
+##### 3.0 作用域&变量提升&闭包
+
+##### 4.0 原型&继承
+
+
 
