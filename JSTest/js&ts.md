@@ -44,7 +44,7 @@
   var obj={
     name:'小张'
     objAge:this.age,
-    myFun:function(){
+    myFun:function(fm,t){
       console.log(this.name+"年龄"+this.age,"来自"+fm+"去往"+t);
     }
   }

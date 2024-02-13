@@ -57,22 +57,35 @@
 // }, 0)
 // console.log("start")
 
-function foo(something) {
-  this.a = something
+// function foo(something) {
+//   this.a = something
+// }
+
+// var obj1 = {
+//   foo: foo
+// }
+
+// var obj2 = {}
+
+// obj1.foo(2);
+// console.log(obj1.a); // 2
+
+// obj1.foo.call(obj2, 3);
+// console.log(obj2.a); // 3
+
+// var bar = new obj1.foo(4)
+// console.log(obj1.a); // 2
+// console.log(bar.a); // 4
+
+function getSomething() {
+  return "something";
 }
-
-var obj1 = {
-  foo: foo
+async function testAsync() {
+  return Promise.resolve("hello async");
 }
-
-var obj2 = {}
-
-obj1.foo(2);
-console.log(obj1.a); // 2
-
-obj1.foo.call(obj2, 3);
-console.log(obj2.a); // 3
-
-var bar = new obj1.foo(4)
-console.log(obj1.a); // 2
-console.log(bar.a); // 4
+async function test() {
+  const v1 = await getSomething();
+  const v2 = await testAsync();
+  console.log(v1, v2);
+}
+test();
