@@ -1,16 +1,15 @@
-//  todo code 1
-let a = {
-    n: 1,
-};
-let b = a;
-// b = { n: 1 };
-a.x = a = {
-    n: 2,
-};
+// //  todo code 1
+// let a = {
+//     n: 1,
+// };
+// let b = a;
+// // b = { n: 1 };
+// a.x = a = {
+//     n: 2,
+// };
 
-console.log(a.x); // undefined
-console.log(b); // {n: 1, x: {n: 2}}
-
+// console.log(a.x); // undefined
+// console.log(b); // {n: 1, x: {n: 2}}
 
 // // todo code 2
 // class Prom {
@@ -104,7 +103,6 @@ console.log(b); // {n: 1, x: {n: 2}}
 // // new Promise((resolve, reject) => reject("Error")).catch((e) => {
 // //     console.log("Error", e);
 // // });
-
 
 // todo Code 3 Promise 2.0
 // 1、基本架构：
@@ -376,3 +374,88 @@ console.log(b); // {n: 1, x: {n: 2}}
 // err :>>  444
 // --- 1 ---
 // p1 res :>>  111
+
+// const test = 'http://www.domain.com/?user=anonymous&id=123&id=456&city=%E5%8C%97%E4%BA%AC&enabled';
+// console.log(/(.+)\?(.+)$/.exec(test));
+
+function jsonToTree(data) {
+  // 初始化结果数组，并判断输入数据的格式
+  let result = [];
+  if (!Array.isArray(data)) {
+    return result;
+  }
+  // 使用map，将当前对象的id与当前对象对应存储起来
+  let map = {};
+  data.forEach((item) => {
+    map[item.id] = item;
+  });
+  // console.log(data,map, "===data");
+  data.forEach((item) => {
+    let parent = map[item.pid];
+    if (parent) {
+      (parent.children || (parent.children = [])).push(item);
+    } else {
+      result.push(item);
+    }
+    console.log(JSON.stringify(result));
+  });
+  return result;
+}
+console.log(
+  JSON.stringify(
+    jsonToTree([
+      {
+        id: 1,
+        pid: 0,
+        name: "body",
+      },
+      {
+        id: 2,
+        pid: 1,
+        name: "title",
+      },
+      {
+        id: 3,
+        pid: 2,
+        name: "div",
+      },
+    ]),
+    null,
+    2
+  )
+);
+
+async function async1() {
+  console.log("async1 start");
+  await async2();
+  console.log("async1 end");
+}
+
+async function async2() {
+  console.log("async2");
+}
+
+console.log("script start");
+
+setTimeout(function () {
+  console.log("setTimeout");
+}, 0);
+
+async1();
+
+new Promise((resolve) => {
+  console.log("promise1");
+  resolve();
+}).then(function () {
+  console.log("promise2");
+});
+console.log("script end");
+
+// script start
+// async1 start
+// async2
+// promise1
+// script end
+// async1 end
+// promise2
+// setTimeout
