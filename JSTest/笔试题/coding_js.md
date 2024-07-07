@@ -806,3 +806,132 @@ function promisify(fn) {
     };
 }
 ```
+
+#### 17. 并发请求
+- urls的长度为0时，results就没有值，此时应该返回空数组
+- maxNum大于urls的长度时，应该取的是urls的长度，否则则是取maxNum
+- 需要定义一个count计数器来判断是否已全部请求完成
+- 因为没有考虑请求是否请求成功，所以请求成功或报错都应把结果保存在results集合中
+- results中的顺序需和urls中的保持一致
+```js
+// 并发请求函数
+const concurrencyRequest = (urls, maxNum) => {
+    return new Promise((resolve) => {
+        if (urls.length === 0) {
+            resolve([]);
+            return;
+        }
+        const results = [];
+        let index = 0; // 下一个请求的下标
+        let count = 0; // 当前请求完成的数量
+
+        // 发送请求
+        async function request() {
+            if (index === urls.length) return;
+            const i = index; // 保存序号，使result和urls相对应
+            const url = urls[index];
+            index++;
+            console.log(url);
+            try {
+                const resp = await fetch(url);
+                // resp 加入到results
+                results[i] = resp;
+            } catch (err) {
+                // err 加入到results
+                results[i] = err;
+            } finally {
+                count++;
+                // 判断是否所有的请求都已完成
+                if (count === urls.length) {
+                    console.log('完成了');
+                    resolve(results);
+                }
+                request();
+            }
+        }
+
+        // maxNum和urls.length取最小进行调用
+        const times = Math.min(maxNum, urls.length);
+        for(let i = 0; i < times; i++) {
+            request();
+        }
+    })
+}
+```
+
+```js
+// 利用promise并发特性
+// 100个请求的URL地址
+const requests = Array.from({ length: 100 }, (_, i) => `http://example.com/api/${i}`);
+
+// 并发队列的最大长度
+const concurrency = 10;
+
+// 使用async/await和Promise实现发送并发请求
+async function sendRequests(requests) {
+  const queue = [];
+  const results = [];
+
+  for (const url of requests) {
+    // 如果队列已经达到最大并发数量，则等待队列中的请求完成后继续执行
+    while (queue.length >= concurrency) {
+      const [result] = await Promise.race(queue);
+      results.push(result);
+      queue.shift();
+    }
+
+    // 创建新的请求并放入队列中
+    const promise = fetch(url)
+      .then(response => response.json())
+      .catch(error => ({ error }));
+
+    queue.push([promise, url]);
+  }
+
+  // 等待所有请求完成
+  while (queue.length > 0) {
+    const [result] = await Promise.race(queue);
+    results.push(result);
+    queue.shift();
+  }
+
+  return results;
+}
+
+// 调用函数并输出结果
+sendRequests(requests).then(results => {
+  console.log(results);
+});
+```
+
+#### 18. 同一页面三个组件请求同一个 API 发送了三次请求，如何优化
+```js
+const fetchUser = (id) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log("Fetch: ", id);
+      resolve(id);
+    }, 5000);
+  });
+};
+ 
+const cache = {};
+const cacheFetchUser = (id) => {
+  if (cache[id]) {
+    return cache[id];
+  }
+  cache[id] = fetchUser(id);
+  return cache[id];
+};
+
+
+// 效果
+cacheFetchUser(3).then((id) => console.log(id))
+cacheFetchUser(3).then((id) => console.log(id))
+cacheFetchUser(3).then((id) => console.log(id))
+ 
+// Fetch:  3
+​// 3
+​// 3
+​// 3
+```

@@ -112,6 +112,92 @@ apply()的参数为空时，默认调用全局对象。因此，这时的运行�
 >- 原生的 WeakMap 持有的是每个键对象的“弱引用”，这意味着在没有其他引用存在时垃圾回收能正确进行。原生 WeakMap 的结构是特殊且有效的，其用于映射的`key`_只有_在其没有被回收时才是有效的。
 >- 由于这样的弱引用，`WeakMap`的`key`是**不可枚举的**(没有方法能给出所有的`key`)。如果`key`是可枚举的话，其列表将会受垃圾回收机制的影响，从而得到不确定的结果。因此，如果你想要这种类型对象的`key`值的列表，你应该使用 Map
 
+#### 6. setTimeout 和 setInterval
+- setTimeout()方法用于在指定毫秒数后再调用函数或者计算表达式（以毫秒为单位）
+- setInterval() 方法用于按照指定的周期（以毫秒计）来循环调用函数或计算表达式，直到 clearInterval() 被调用或窗口关闭，由 setInterval() 返回的 ID 值可用作 clearInterval() 方法的参数
+- setInterval() 缺点：
+  - 1、无视代码错误
+setInterval执行过程中会无视自己调用的代码，会持续不断地调用改代码；
+  - 2、无视网络延迟
+无视对网络请求的响应是否完成，会不断发送请求；
+  - 3、不保证执行
+到了时间间隔，如果setInterval需要调用的函数需要花费时间较长，可能就会被直接忽略。
+
+- 用setTimeout实现 setInternal
+```js
+// 简易版
+setTimeout(function () {
+    // 任务
+    setTimeout(arguments.callee, 1000);
+}, 1000)
+
+
+function mySetInternal(func,delay){
+  //声明timer，用于后面清除定时器
+  let timer = null
+  const interval = () =>{
+    //执行对应传入函数
+    func()
+    //用timer接收setTimeout返回的定时器编号
+    //setTimeout接收interval和delay，等待delay结束后，再次执行setTimeout
+    timer = setTimeout(interval,delay)
+  }
+  //第一次调用setTimeout，调用interval，时延为delay
+  setTimeout(interval,delay)
+  //返回一个cancel方法取消调用
+  return {
+    cancel: ()=>{
+      //清除timer编号的定时器
+      clearTimeout(timer)
+    }
+  }
+}
+
+// 测试
+//传进一个console.log的函数，解构出cancel方法
+const { cancel } = mySetInternal(() => console.log(888),1000)
+setTimeout(()=>{
+  cancel()
+},4000)
+```
+
+```js
+// 终极版
+let timeMap = {}
+let id = 0 // 简单实现id唯一
+const mySetInterval = (cb, time) => {
+  let timeId = id // 将timeId赋予id
+  id++ // id 自增实现唯一id
+  let fn = () => {
+    cb()
+    timeMap[timeId] = setTimeout(() => {
+      fn()
+    }, time)
+  }
+  timeMap[timeId] = setTimeout(fn, time)
+  return timeId // 返回timeId
+}
+
+const myClearInterval = (id) => {
+  clearTimeout(timeMap[id]) // 通过timeMap[id]获取真正的id
+  delete timeMap[id]
+}
+```
+
+- 用setInternal实现setTimeout
+```js
+function mySetTimeout(func,delay){
+  //timer用来接收setInterval返回的编号，用于后面清除setInterval
+  //setInterval会一直执行，但是在setInterval里面执行clearInterval()将会被清除
+  const timer = setInterval(()=>{
+    //执行传入函数
+    func()
+    //清除该次setInterval
+    clearInterval(timer)
+  },delay)
+}
+```
+
 
 #### TS
 ##### 1. type和interface的区别

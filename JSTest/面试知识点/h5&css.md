@@ -64,7 +64,7 @@
 
 ##### 2. 图片懒加载
 >1.如何判断图片出现在了当前视口 （即如何判断我们能够看到图片）
-2.如何控制图片的加载
+>2.如何控制图片的加载
 - 方案一：位置计算 + 滚动事件 (Scroll) + DataSet API
   - 判断在当前视口:`clientTop`，`offsetTop`，`clientHeight` 以及  `scrollTop` 各种关于图片的高度作比对
   - 监听 `window.scroll` 事件

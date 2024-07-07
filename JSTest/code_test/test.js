@@ -378,6 +378,7 @@
 // const test = 'http://www.domain.com/?user=anonymous&id=123&id=456&city=%E5%8C%97%E4%BA%AC&enabled';
 // console.log(/(.+)\?(.+)$/.exec(test));
 
+// json转tree
 function jsonToTree(data) {
   // 初始化结果数组，并判断输入数据的格式
   let result = [];
@@ -425,31 +426,31 @@ console.log(
   )
 );
 
-async function async1() {
-  console.log("async1 start");
-  await async2();
-  console.log("async1 end");
-}
+// async function async1() {
+//   console.log("async1 start");
+//   await async2();
+//   console.log("async1 end");
+// }
 
-async function async2() {
-  console.log("async2");
-}
+// async function async2() {
+//   console.log("async2");
+// }
 
-console.log("script start");
+// console.log("script start");
 
-setTimeout(function () {
-  console.log("setTimeout");
-}, 0);
+// setTimeout(function () {
+//   console.log("setTimeout");
+// }, 0);
 
-async1();
+// async1();
 
-new Promise((resolve) => {
-  console.log("promise1");
-  resolve();
-}).then(function () {
-  console.log("promise2");
-});
-console.log("script end");
+// new Promise((resolve) => {
+//   console.log("promise1");
+//   resolve();
+// }).then(function () {
+//   console.log("promise2");
+// });
+// console.log("script end");
 
 // script start
 // async1 start
@@ -459,3 +460,114 @@ console.log("script end");
 // async1 end
 // promise2
 // setTimeout
+
+// 通过关键字模糊匹配检索一个省市区的多叉树集合，输出所有匹配的路径集合
+const sourceData = [
+  {
+    name: "江苏省",
+    children: [
+      {
+        name: "南京市",
+
+        children: [
+          {
+            name: "玄武区",
+          },
+
+          {
+            name: "秦淮区",
+          },
+
+          {
+            name: "建邺区",
+          },
+
+          {
+            name: "鼓楼区",
+          },
+
+          {
+            name: "浦口区",
+          },
+
+          {
+            name: "栖霞区",
+          },
+
+          {
+            name: "雨花台区",
+          },
+
+          {
+            name: "江宁区",
+          },
+
+          {
+            name: "六合区",
+          },
+
+          {
+            name: "溧水区",
+          },
+
+          {
+            name: "高淳区",
+          },
+        ],
+      },
+      {
+        name: "常州市",
+        children: [
+          {
+            name: "天宁区",
+          },
+
+          {
+            name: "钟楼区",
+          },
+
+          {
+            name: "新北区",
+          },
+
+          {
+            name: "武进区",
+          },
+
+          {
+            name: "金坛区",
+          },
+
+          {
+            name: "溧阳市",
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const keyword = "宁";
+
+// => ["江苏省-南京市-江宁区", "江苏省-常州市-天宁区"]
+
+function getPath(sourceData, keyword) {
+  let ansItem = "";
+  let ans = [];
+  helpGetItem(sourceData, ansItem);
+
+  function helpGetItem(currentChild, ansItem) {
+    if (!currentChild) {
+      if (ansItem.includes(keyword)) {
+        ans.push(ansItem.slice(1));
+      }
+    }
+    currentChild?.forEach((item) => {
+      let newItem = ansItem;
+      newItem = newItem + "-" + item.name;
+      helpGetItem(item?.children, newItem);
+    });
+  }
+  return ans;
+}
+console.log(getPath(sourceData, keyword));

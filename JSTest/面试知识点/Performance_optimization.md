@@ -133,7 +133,7 @@ border-radius、visibility、box-shadow
 ##### 3. DllPlugin
 `DllPlugin` 可以将特定的类库提前打包然后引入。这种方式可以极大的减少打包类库的次数，只有当类库更新版本才有需要重新打包，并且也实现了将公共代码抽离成单独文件的优化方案。
 ##### 4. 代码压缩
-- `Webpack3`: 一般使用 UglifyJS 来压缩代码，但是这个是单线程运行的，为了加快效率，可以使用 webpack-parallel-uglify-plugin 来并行运行 UglifyJS，从而提高效率。
+- `Webpack3`: 一般使用 `UglifyJS` 来压缩代码，但是这个是单线程运行的，为了加快效率，可以使用 webpack-parallel-uglify-plugin 来并行运行 UglifyJS，从而提高效率。
 - `Webpack4` 中，mode => production 就可以默认开启以上功能。代码压缩也是我们必做的性能优化方案，当然我们不止可以压缩 JS 代码，还可以压缩 HTML、CSS 代码，并且在压缩 JS 代码的过程中，我们还可以通过配置实现比如删除 console.log 这类代码的功能。
 ##### 其他
 可以通过一些小的优化点来加快打包速度
@@ -147,7 +147,7 @@ border-radius、visibility、box-shadow
 2. `Scope Hoisting`
 > `Scope Hoisting` 会分析出模块之间的依赖关系，尽可能的把打包出来的模块合并到一个函数中去
 > wp4: `optimization.concatenateModules`设置为`true`
-1. Tree Shaking
+3. Tree Shaking
 > 实现删除项目中未被引用的代码
 #### 6.5 如何⽤webpack来优化前端性能？
 > ⽤webpack优化前端性能是指优化webpack的输出结果，让打包的最终结果在浏览器运⾏快速⾼效。
@@ -165,4 +165,17 @@ border-radius、visibility、box-shadow
 5. 使⽤ `webpack-uglify-parallel` 来提升 `uglifyPlugin` 的压缩速度。 原理上 `webpack-uglify-parallel` 采⽤了多核并⾏压缩来提升压缩速度
 6. 使⽤ `Tree-shaking` 和 `Scope Hoisting` 来剔除多余代码
 
+### 7. 如何高效渲染大数据量
+> 请求分组+任务分组
+1、解决大数据量渲染的问题，常见方法有：时间分片、虚拟列表等；
+2、解决同步阻塞的问题，常见方法有：任务分解、异步等；
+3、如果某个任务执行时间较长的话，从优化的角度，我们通常会考虑将该任务分解成一系列的子任务。
+  在任务分组一节，我们将 setTimeout 的时间间隔设置为 100ms，也就是我认为最快在 100ms 内能完成渲染；但假设不到 100ms 就完成了渲染，那么就需要白白等待一段时间，这是没有必要的。这时可以考虑window.requestAnimationFrame 方法。
+```js
+setTimeout(() => {
+  window.requestAnimationFrame(() => {
+    loop(idx + renderOnce);
+  }, 100);
+});
+```
 
