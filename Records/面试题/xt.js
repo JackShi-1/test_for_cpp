@@ -4,7 +4,7 @@
 
 //     // useEffect(()=>{
 //     //     const timer = setInternal(()=>{
-//     //         setCount(count+1);
+//     //         setCount(prevValue => prevValue + 1);
 //     //     },1000);
 
 //     //     return () => clearInternal(timer);

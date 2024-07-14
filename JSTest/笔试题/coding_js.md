@@ -935,3 +935,30 @@ cacheFetchUser(3).then((id) => console.log(id))
 ​// 3
 ​// 3
 ```
+
+#### 19. [React]实现一个定时器计数器，每秒自动+1
+```js
+import React, { useState, useEffect } from "react";
+
+export default function App() {
+  let [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let timer = setInterval(() => {
+      setCount((preValue) => {
+        return preValue + 1;
+      });
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  return <div>{count}</div>;
+}
+
+// 核心知识点
+// setCount(value)
+// setCount(preValue=>newValue)
+```
