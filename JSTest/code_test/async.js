@@ -77,15 +77,24 @@
 // console.log(obj1.a); // 2
 // console.log(bar.a); // 4
 
-function getSomething() {
-  return "something";
-}
-async function testAsync() {
-  return Promise.resolve("hello async");
-}
-async function test() {
-  const v1 = await getSomething();
-  const v2 = await testAsync();
-  console.log(v1, v2);
-}
-test();
+// function getSomething() {
+//   return "something";
+// }
+// async function testAsync() {
+//   return Promise.resolve("hello async");
+// }
+// async function test() {
+//   const v1 = await getSomething();
+//   const v2 = await testAsync();
+//   console.log(v1, v2);
+// }
+// test();
+
+const arr = [3, 4];
+console.log(arr[Symbol.iterator]); // [Function: values]
+
+const iter = arr[Symbol.iterator]();
+console.log(iter); // Object [Array Iterator] {}
+console.log(iter.next()); // { value: 3, done: false }
+console.log(iter.next()); // { value: 4, done: false }
+console.log(iter.next()); // { value: undefined, done: true }

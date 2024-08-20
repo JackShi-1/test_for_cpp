@@ -1,6 +1,7 @@
 #### JS
 ##### 1. 闭包和作用域
->闭包是作用域应用的特殊场景。 js中常见的作用域包括全局作用域、函数作用域、块级作用域。要知道 **Js中自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方**。 常见的闭包使用有两种场景：一种是函数作为参数被传递；一种是函数作为返回值被返回。
+> 闭包是作用域应用的特殊场景。 js中常见的作用域包括全局作用域、函数作用域、块级作用域。要知道 **Js中自由变量的查找是在函数定义的地方，向上级作用域查找，不是在执行的地方**。 常见的闭包使用有两种场景：一种是函数作为参数被传递；一种是函数作为返回值被返回。
+> 闭包是指有权访问另一个函数作用域中变量的函数 (闭包中的变量存储的位置是堆内存)
 
 ##### 2. 函数中的arguments
 - 只有函数才有arguments
@@ -108,9 +109,50 @@ obj.m.apply(obj); //1
 ```
 apply()的参数为空时，默认调用全局对象。因此，这时的运行结果为0，证明this指的是全局对象。
 
-#### 5. WeakMap
+#### 5. WeakMap & WeakSet & Map & Set & Object
 >- 原生的 WeakMap 持有的是每个键对象的“弱引用”，这意味着在没有其他引用存在时垃圾回收能正确进行。原生 WeakMap 的结构是特殊且有效的，其用于映射的`key`_只有_在其没有被回收时才是有效的。
 >- 由于这样的弱引用，`WeakMap`的`key`是**不可枚举的**(没有方法能给出所有的`key`)。如果`key`是可枚举的话，其列表将会受垃圾回收机制的影响，从而得到不确定的结果。因此，如果你想要这种类型对象的`key`值的列表，你应该使用 Map
+## Set
+1. 一堆无序的、相关联的，且不重复的内存结构
+2. add() delete() has() clear()
+3. 遍历方法：
+   1. keys()：返回键名的遍历器
+   2. values()：返回键值的遍历器
+   3. entries()：返回键值对的遍历器
+   4. forEach()：使用回调函数遍历每个成员，没有返回值，键值、键名都相等
+## Map
+1. 一些元素的集合。每个元素有一个称作key 的域，不同元素的key 各不相同
+2. size 属性 set() get() has() delete() clear()
+3. 遍历方法：
+   1. keys()：返回键名的遍历器
+   2. values()：返回键值的遍历器
+   3. entries()：返回键值对的遍历器
+   4. forEach()：使用回调函数遍历每个成员，遍历顺序就是插入顺序
+#
+## Object
+## WeakSet && WeakMap
+- WeakSet：
+  - 可以接受一个具有 Iterable接口的对象作为参数
+    ```js
+      const a = [[1, 2], [3, 4]];
+      const ws = new WeakSet(a);
+    ```
+    - WeakSet只能成员只能是引用类型，而不能是其他类型的值
+    - 不是引用类型, 会报错
+  - 没有遍历操作的API，没有size属性
+  - WeakSet里面的引用只要在外部消失，它在 WeakSet里面的引用就会自动消失
+- WeakMap
+  - 没有遍历操作的API，没有clear清空方法
+  - WeakMap只接受对象作为键名（null除外），不接受其他类型的值作为键名
+  - WeakMap的键名所指向的对象，一旦不再需要，里面的键名对象和所对应的键值对会自动消失，不用手动删除引用
+## Map和Object区别
+1. Key类型：Object：key 必须是简单数据类型（整数，字符串或者是 symbol）， Map： JavaScript 支持的所有数据类型，也就是说可以用一个 Object 来当做一个Map元素的 key；
+2. 元素顺序：Map元素的顺序遵循插入的顺序，Object无序
+3. 继承：Map 继承自 Object 对象，仅支持构造函数构建；Object 支持多种方法来创建新的实例
+4. 数据访问：Map原生方法，Object 可以通过 . 和 [ ] 来访问
+5. 获取size：Map 自身有 size 属性，可以自己维持 size 的变化。Object 则需要借助 Object.keys() 来计算
+6. Map 自身支持迭代，Object 不支持
+
 
 #### 6. setTimeout 和 setInterval
 - setTimeout()方法用于在指定毫秒数后再调用函数或者计算表达式（以毫秒为单位）
@@ -195,6 +237,70 @@ function mySetTimeout(func,delay){
     //清除该次setInterval
     clearInterval(timer)
   },delay)
+}
+```
+
+#### 7. 原型链和继承
+
+#### 8. 判断对象是否存在循环引用 && 深拷贝
+> 循环引用对象本来没有什么问题，但是序列化的时候就会发生问题，比如调用JSON.stringify()对该类对象进行序列化，就会报错: Converting circular structure to JSON.
+> 下面方法可以用来判断一个对象中是否已存在循环引用：
+```js
+const isCycleObject = (obj, parent) => {
+  const parentArr = parent || [obj];
+  // 记录当前obj信息，与下一层级进行判断
+  for (let i in obj) {
+    if (typeof obj[i] === "object") {
+      let flag = false;
+      parentArr.forEach((item) => {
+        if (item === obj[i]) {
+          flag = true;
+        }
+      });
+      if (flag) return true;
+      // 递归判断
+      flag = isCycleObject(obj[i], [...parentArr, obj[i]]);
+      if (flag) return true;
+    }
+  }
+  return false;
+};
+let obj1 = {};
+let obj2 = {
+  b: obj1,
+};
+obj1.a = obj2;
+console.log(isCycleObject(obj1));
+```
+```js
+/**
+ * 深拷贝关注点:
+ * 1. JavaScript内置对象的复制: Set、Map、Date、Regex等
+ * 2. 循环引用问题
+ * @param {*} object
+ * @returns
+ */
+function deepCopy(object, map = new WeakMap()) {
+    if (!object || typeof object !== "object") return object;
+    // 内置对象的复制
+    if (object === null) return object;
+    if (object instanceof Date) return new Date(object);
+    if (object instanceof RegExp) return new RegExp(object);
+
+    // 解决循环引用问题
+    if (map.has(object)) return map.get(object);
+
+    let newObject = Array.isArray(object) ? [] : {};
+    map.set(object, newObject);
+
+    for (let key in object) {
+        if (object.hasOwnProperty(key)) {
+            newObject[key] =
+                typeof object[key] === "object" ? deepCopy(object[key]) : object[key];
+        }
+    }
+
+    return newObject;
 }
 ```
 

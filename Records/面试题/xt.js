@@ -44,20 +44,20 @@
 //     }
 // ]
 
-function jsToTree(data) {
-  let result = [];
+// function jsToTree(data) {
+//   let result = [];
 
-  let map = {};
-  data.forEach((item) => {
-    map[id] = item;
-  });
+//   let map = {};
+//   data.forEach((item) => {
+//     map[id] = item;
+//   });
 
-  data.forEach((item) => {
-    let parent = map[item.parentId];
-    if (parent) {
-      (parent.children || (parent.children = [])).push(item);
-    } else {
-      result.push(item);
-    }
-  });
-}
+//   data.forEach((item) => {
+//     let parent = map[item.parentId];
+//     if (parent) {
+//       (parent.children || (parent.children = [])).push(item);
+//     } else {
+//       result.push(item);
+//     }
+//   });
+// }

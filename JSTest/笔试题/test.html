@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sticky</title>
+
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+        .wrapper {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        .left, .right {
+            flex: 1;
+            overflow: auto;
+            overflow-anchor: none;
+        }
+        .label {
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: height .3s;
+            border-bottom: 1px solid;
+        }
+        .left .label {
+            background: #d1efec;
+        }
+        .right .label {
+            background: #efd1d1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="left">
+            <div class="anchor"></div>
+            <div class="label">A</div>
+            <div style="height: 40vh;background: rgba(0,0,0,.2);">1</div>
+            <div style="height: 80vh;background: rgba(0,0,0,.3);">2</div>
+            <div class="anchor"></div>
+            <div class="label">B</div>
+            <div style="height: 20vh;background: rgba(0,0,0,.4);">3</div>
+            <div style="height: 30vh;background: rgba(0,0,0,.5);">4</div>
+            <div class="anchor"></div>
+            <div class="label">C</div>
+            <div style="height: 50vh;background: rgba(0,0,0,.6);">5</div>
+            <div style="height: 70vh;background: rgba(0,0,0,.7);">6</div>
+        </div>
+        <div style="width: 2px;"></div>
+        <div class="right">
+            <div class="anchor"></div>
+            <div class="label">一</div>
+            <div style="height: 40vh;background: rgba(0,0,0,.2);">1</div>
+            <div style="height: 80vh;background: rgba(0,0,0,.3);">2</div>
+            <div style="height: 20vh;background: rgba(0,0,0,.4);">3</div>
+            <div style="height: 30vh;background: rgba(0,0,0,.5);">4</div>
+            <div class="anchor"></div>
+            <div class="label">二</div>
+            <div style="height: 50vh;background: rgba(0,0,0,.6);">5</div>
+            <div style="height: 70vh;background: rgba(0,0,0,.7);">6</div>
+        </div>
+    </div>
+</body>
+</html>
