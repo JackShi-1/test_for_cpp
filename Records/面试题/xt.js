@@ -61,3 +61,28 @@
 //     }
 //   });
 // }
+
+var a = 1;
+a = 2;
+window.a = 3; // 全局变量 1->2->3
+function Test() {
+  let a = 4; // 局部变量
+  this.a = 5; // 实例
+  setTimeout(function () {
+    console.log(a); // 闭包拿到的局部a
+  }, 10);
+
+  setTimeout(function () {
+    console.log(this.a); // this指向全局
+  }, 20);
+
+  setTimeout(() => {
+    console.log(a); //局部
+  }, 30);
+
+  setTimeout(() => {
+    console.log(this.a); // 当前实例this
+    // 如果箭头函数使用了this，会往上层作用域去找
+  }, 40);
+}
+new Test();

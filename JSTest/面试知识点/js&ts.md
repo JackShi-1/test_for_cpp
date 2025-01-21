@@ -345,4 +345,28 @@ const bMan: tManPlus = {
   height: "150cm",
 };
 ```
-1. 
+
+#### 实现一个 once 函数，记忆返回结果只执行一次
+```js
+function once(f){
+  let result;
+  let revoked = false;
+  return (...args) => {
+    if(revoked) return result;
+    const r = f(...args);
+    revoked = true;
+    result = r;
+    return r;
+  }
+}
+
+// 惰性函数
+function once(fn){
+  function o(...args){
+    const res = fn(...args);
+    o = () => res;
+    return o();
+  }
+  return o; // 函数重写
+}
+```

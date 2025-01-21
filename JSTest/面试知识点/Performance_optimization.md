@@ -179,3 +179,20 @@ setTimeout(() => {
 });
 ```
 
+
+### 如何压缩前端项目中JS体积
+1. 插件：terser / uglify / swc（rust）
+2. gzip / brotli 压缩， 在网关处开启
+3. 分析打包工具 webpack-bundle-analyzer，替换占用较大体积的库，如 moment -> dayjs，querystring -> qs
+4. 使用支持 Tree-Shaking 的库，对无引用的库或函数进行删除，如 lodash -> lodash/es
+5. 对无法 Tree Shaking 的库，进行按需引入模块，如使用 import Button from 'antd/lib/Button'，此处可手写 babel-plugin 自动完成，但不推荐
+6. 使用 babel (css 为 postcss) 时采用 browserlist，越先进的浏览器所需要的 polyfill 越少，体积更小
+7. code spliting，路由懒加载，只加载当前路由的包，按需加载其余的 chunk，首页 JS 体积变小 (PS: 次条不减小总体积，但减小首页体积)
+8. 使用 webpack 的 splitChunksPlugin，把运行时、被引用多次的库进行分包，在分包时要注意避免某一个库被多次引用多次打包。此时分为多个 chunk，虽不能把总体积变小，但可提高加载性能 (PS: 此条不减小总体积，但可提升加载性能)
+
+### 如何优化React项目性能
+1. 避免不必要的渲染，shouldComponentUpdate、React.memo、React.useMemo、React.useCallback。
+2. 代码分割，React.lazy 动态加载组件
+3. 使用 react-query，对请求响应进行缓存、重发等，避免多次请求，减少网络 IO 消耗及优化渲染次数
+4. 使用 useDebounce，对值及事件处理函数进行防抖，避免状态频繁变动，优化渲染次数
+5. 使用 useImmer
