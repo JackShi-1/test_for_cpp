@@ -963,7 +963,7 @@ export default function App() {
 // setCount(preValue=>newValue)
 ```
 
-#### 20. [对象可结构]让下面代码成立
+#### 20. [对象可解构]让下面代码成立
 ```js
 var [a, b] = {
     a: 3,

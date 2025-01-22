@@ -55,20 +55,13 @@ var obj={
   objAge:this.age,
   myFun:function(fm,t){
     console.log(this.name+"年龄"+this.age,"来自"+fm+"去往"+t);
-  }
-}
-var db={
-  name:'德玛',
-  age:99,
-}
+  obj.myFun.call(db,'成都','上海');//德玛年龄99来自成都去往上海
+  obj.myFun.apply(db,['成都','上海']);//德玛年龄99来自成都去往上海  
+  obj.myFun.bind(db,'成都','上海')();// 德玛年龄99来自成都去往上海
+  obj.myFun.bind(db,['成都','上海'])();//德玛年龄99来自成都, 上海去往 undefined
+  ```
 
-obj.myFun.call(db,'成都','上海');//德玛年龄99来自成都去往上海
-obj.myFun.apply(db,['成都','上海']);//德玛年龄99来自成都去往上海
-obj.myFun.bind(db,'成都','上海')();// 德玛年龄99来自成都去往上海
-obj.myFun.bind(db,['成都','上海'])();//德玛年龄99来自成都, 上海去往 undefined
-```
-
-3.手写 call/apply/bind
+3. 手写 call/apply/bind
 
 ```js
 // call函数实现
@@ -133,7 +126,8 @@ Function.prototype.myBind = function (context) {
 #### 4. [一秒理解 this](https://www.ruanyifeng.com/blog/2010/04/using_this_keyword_in_javascript.html)
 
 > 函数运行时，在函数体内部自动生成的一个对象，只能在函数体内部使用
-
+> 对象不构成单独的作用域
+> 
 1. 函数调用
    函数的最通常用法，属于全局性调用，因此 this 就代表全局对象
 
