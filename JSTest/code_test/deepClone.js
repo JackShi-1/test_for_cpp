@@ -27,7 +27,9 @@ function deepCopy(object, map = new WeakMap()) {
     if (object === null) return object;
     if (object instanceof Date) return new Date(object);
     if (object instanceof RegExp) return new RegExp(object);
-
+    if (object instanceof Set) return new Set(object);
+    if (object instanceof Map) return new Map(object);
+    // map的循环引用
     if (map.has(object)) return map.get(object);
 
     let newObject = Array.isArray(object) ? [] : {};
