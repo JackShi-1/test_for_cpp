@@ -2,13 +2,13 @@
 // function Counter() {
 //     const [count, setCount ] = useState(0);
 
-//     // useEffect(()=>{
-//     //     const timer = setInternal(()=>{
-//     //         setCount(prevValue => prevValue + 1);
-//     //     },1000);
+//     useEffect(()=>{
+//         const timer = setInternal(()=>{
+//             setCount(prevValue => prevValue + 1);
+//         },1000);
 
-//     //     return () => clearInternal(timer);
-//     // },[])
+//         return () => clearInternal(timer);
+//     },[])
 
 //     return (
 //         <div>{count}</div>;
