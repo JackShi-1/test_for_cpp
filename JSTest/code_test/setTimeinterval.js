@@ -1,3 +1,9 @@
+// 简易版
+setTimeout(function () {
+  // 任务
+  setTimeout(arguments.callee, 1000);
+}, 1000);
+
 let timeMap = {};
 let id = 0; // 简单实现id唯一
 const mySetInterval = (cb, time) => {
@@ -19,12 +25,12 @@ const myClearInterval = (id) => {
 };
 
 function mySetTimeout(func, delay) {
-    //timer用来接收setInterval返回的编号，用于后面清除setInterval
-    //setInterval会一直执行，但是在setInterval里面执行clearInterval()将会被清除
-    const timer = setInterval(() => {
-      //执行传入函数
-      func();
-      //清除该次setInterval
-      clearInterval(timer);
-    }, delay);
-  }
+  //timer用来接收setInterval返回的编号，用于后面清除setInterval
+  //setInterval会一直执行，但是在setInterval里面执行clearInterval()将会被清除
+  const timer = setInterval(() => {
+    //执行传入函数
+    func();
+    //清除该次setInterval
+    clearInterval(timer);
+  }, delay);
+}
