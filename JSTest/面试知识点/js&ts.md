@@ -56,69 +56,16 @@ var obj={
   myFun:function(fm,t){
     console.log(this.name+"年龄"+this.age,"来自"+fm+"去往"+t);
   obj.myFun.call(db,'成都','上海');//德玛年龄99来自成都去往上海
-  obj.myFun.apply(db,['成都','上海']);//德玛年龄99来自成都去往上海  
+  obj.myFun.apply(db,['成都','上海']);//德玛年龄99来自成都去往上海
   obj.myFun.bind(db,'成都','上海')();// 德玛年龄99来自成都去往上海
   obj.myFun.bind(db,['成都','上海'])();//德玛年龄99来自成都, 上海去往 undefined
-  ```
-
-3. 手写 call/apply/bind
-
-```js
-// call函数实现
-Function.prototype.myCall = function (context) {
-  // 判断调用对象
-  if (typeof this !== "function") {
-    console.error("type error");
-  }
-  // 获取参数
-  let args = [...arguments].slice(1);
-  let result = null;
-  // 判断 context 是否传入，如果未传入则设置为 window
-  context = context || window;
-  // 将调用函数设为对象的方法
-  context.fn = this;
-  // 调用函数
-  result = context.fn(...args);
-  // 将属性删除
-  delete context.fn;
-  return result;
-};
-// apply 函数实现
-Function.prototype.myApply = function (context) {
-  // 判断调用对象是否为函数
-  if (typeof this !== "function") {
-    throw new TypeError("Error");
-  }
-  let result = null;
-  // 判断 context 是否存在，如果未传入则为 window
-  context = context || window;
-  // 将函数设为对象的方法
-  context.fn = this;
-  // 调用方法
-  if (arguments[1]) {
-    result = context.fn(...arguments[1]);
-  } else {
-    result = context.fn();
-  }
-  // 将属性删除
-  delete context.fn;
-  return result;
-};
-// bind 函数实现
-Function.prototype.myBind = function (context, ...args) {
-  const self = this;
-
-  return function (...innerArgs) {
-    return self.myCall(context, ...args.concat(innerArgs));
-  };
-};
 ```
 
 #### 4. [一秒理解 this](https://www.ruanyifeng.com/blog/2010/04/using_this_keyword_in_javascript.html)
 
 > 函数运行时，在函数体内部自动生成的一个对象，只能在函数体内部使用
 > 对象不构成单独的作用域
-> 
+
 1. 函数调用
    函数的最通常用法，属于全局性调用，因此 this 就代表全局对象
 
@@ -430,30 +377,4 @@ const bMan: tManPlus = {
   age: 15,
   height: "150cm",
 };
-```
-
-#### 实现一个 once 函数，记忆返回结果只执行一次
-
-```js
-function once(f) {
-  let result;
-  let revoked = false;
-  return (...args) => {
-    if (revoked) return result;
-    const r = f(...args);
-    revoked = true;
-    result = r;
-    return r;
-  };
-}
-
-// 惰性函数
-function once(fn) {
-  function o(...args) {
-    const res = fn(...args);
-    o = () => res;
-    return o();
-  }
-  return o; // 函数重写
-}
 ```

@@ -1,34 +1,3 @@
-// function getRandomNumber(len) {
-//   let ans = [];
-//   let ans_set = new Set();
-//   while (ans.length < len) {
-//     const randomAns = Math.random() * 990 + 10;
-//     if (!ans_set.has(randomAns)) {
-//       ans.push(randomAns);
-//       ans_set.add(randomAns);
-//     }
-//   }
-//   return ans;
-// }
-// console.log(getRandomNumber(100000));
-
-// function deepClone(object) {
-//   if (!object || typeof object !== "object") return;
-
-//   let newObject = Array.isArray(object) ? [] : {};
-//   for (let key in object) {
-//     if (object.hasOwnProperty(key)) {
-//       if (typeof object[key] === "object") {
-//         deepClone(object[key]);
-//       } else {
-//         newObject = object[key];
-//       }
-//     }
-//   }
-
-//   return newObject;
-// }
-
 const test = [
   {
     id: 1,
@@ -61,3 +30,37 @@ function jsonToTree(data) {
 }
 
 console.log(jsonToTree(test));
+
+function jsonToTree(jsonData) {
+  const result = { children: [] };
+  const map = {};
+
+  for (const item of jsonData) {
+    const { id, parentId } = item;
+    const newNode = { ...item, children: [] };
+
+    map[id] = newNode;
+
+    if (parentId) {
+      if (!map[parentId]) {
+        map[parentId] = { children: [] };
+      }
+      map[parentId].children.push(newNode);
+    } else {
+      result.children.push(newNode);
+    }
+  }
+
+  return result;
+}
+
+// 示例 JSON 数据
+const json = [
+  { id: 1, name: "Node 1", parentId: null },
+  { id: 2, name: "Node 2", parentId: 1 },
+  { id: 3, name: "Node 3", parentId: 1 },
+  { id: 4, name: "Node 4", parentId: 2 },
+];
+
+const tree = jsonToTree(json);
+console.log(tree);
