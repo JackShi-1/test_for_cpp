@@ -1,0 +1,28 @@
+<style>
+    .box {
+      width: 500px;
+      height: 500px;
+      background-color: blue;
+    }
+    
+    .transition {
+      transition: background-color 1000ms ease;
+    }
+    
+    .green {
+      background-color: green;
+    }
+</style>
+    
+<div id="btn">click</div>
+
+<script>
+    const div = document.createElement("div")
+    div.classList.add("box")
+    const btn = document.getElementById("btn")
+    btn.addEventListener("click", () => {
+      document.body.appendChild(div);
+      div.classList.add("transition");
+      div.classList.add("green");
+    })
+</script>
