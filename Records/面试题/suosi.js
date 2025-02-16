@@ -7,7 +7,7 @@
 // 2 12
 // 3 13 11
 // 4 14 15 10
-// 5  6  7  8  9
+// 5 6 7 8 9
 
 function spiralFill(n) {
   const result = new Array(n).fill(0).map((_, i) => new Array(n).fill(0));
@@ -30,12 +30,30 @@ function spiralFill(n) {
     }
     if (flag === "下" && (i >= n - 1 || result[i][j] !== 0)) {
       flag = "右";
+      // 要退回去并且改方向
+      if (result[i][j]) {
+        i--;
+        j++;
+      }
     } else if (flag === "右" && (j >= n - 1 || result[i][j] !== 0)) {
       flag = "左上";
-    } else if (flag === "左上" && result[i - 1][j - 1] !== 0) {
+      // 要退回去并且改方向
+      if (result[i][j]) {
+        j--;
+        i--;
+        j--;
+      }
+    } else if (flag === "左上" && result[i][j] !== 0) {
       flag = "下";
+      // 要退回去并且改方向
+      if (result[i][j]) {
+        i++;
+        j++;
+        i++;
+      }
     }
   }
-  console.log(result, nums);
+  console.log(result);
 }
 spiralFill(5);
+spiralFill(6);
