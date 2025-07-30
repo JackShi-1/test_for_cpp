@@ -302,13 +302,96 @@ promiseAll([p3, p1, p2]).then(res => {
 #### 7. 手写 Promise.race
 > 该方法的参数是 Promise 实例数组, 然后其 then 注册的回调方法是数组中的某一个 Promise 的状态变为 fulfilled 的时候就执行.因为 Promise 的状态只能改变一次, 那么我们只需要把 Promise.race 中产生的 Promise 对象的 resolve 方法, 注入到数组中的每一个 Promise 实例中的回调函数中即可.
 ```js
-    Promise.race = function (args) {
+    Promise.all = function(args){
         return new Promise((resolve, reject) => {
-            for (let i = 0, len = args.length; i < len; i++) {
-                args[i].then(resolve, reject)
+            let resolveCounts = 0;
+            let results = [];
+            
+            // 处理空数组的情况
+            if (args.length === 0) {
+                resolve([]);
+                return;
+            }
+            
+            for(let i = 0; i < args.length; i++){
+                // 使用Promise.resolve包装，确保处理非Promise值
+                Promise.resolve(args[i]).then(
+                    (value) => {
+                        results[i] = value;  // 保持结果顺序
+                        resolveCounts++;
+                        
+                        // 所有Promise都resolved时，返回结果数组
+                        if (resolveCounts === args.length) {
+                            resolve(results);
+                        }
+                    },
+                    (reason) => {
+                        // 任何一个Promise被reject，立即reject
+                        reject(reason);
+                    }
+                );
             }
         })
     }
+
+    // 测试用例
+    const p1 = Promise.resolve(1);
+    const p2 = new Promise(resolve => setTimeout(() => resolve(2), 1000));
+    const p3 = Promise.resolve(3);
+    
+    Promise.all([p1, p2, p3]).then(values => {
+        console.log(values); // [1, 2, 3]
+    }).catch(err => {
+        console.error(err);
+    });
+    
+    // 测试reject情况
+    const p4 = Promise.resolve(1);
+    const p5 = Promise.reject('error');
+    const p6 = Promise.resolve(3);
+    
+    Promise.all([p4, p5, p6]).then(values => {
+        console.log(values);
+    }).catch(err => {
+        console.error(err); // 'error'
+    });
+
+    Promise.race = function (args) {
+        return new Promise((resolve, reject) => {
+            // 如果是空数组，返回一个永远不会resolve的Promise
+            if (args.length === 0) {
+                return; // 永远pending
+            }
+            
+            for (let i = 0, len = args.length; i < len; i++) {
+                // 使用Promise.resolve包装，确保处理非Promise值
+                Promise.resolve(args[i]).then(resolve, reject);
+            }
+        })
+    }
+
+    // 测试用例
+    const fast = Promise.resolve('fast');
+    const slow = new Promise(resolve => setTimeout(() => resolve('slow'), 1000));
+    
+    Promise.race([fast, slow]).then(value => {
+        console.log(value); // 'fast'
+    });
+    
+    // 测试reject情况
+    const p1 = new Promise(resolve => setTimeout(() => resolve('success'), 1000));
+    const p2 = Promise.reject('error');
+    
+    Promise.race([p1, p2]).then(value => {
+        console.log(value);
+    }).catch(err => {
+        console.error(err); // 'error'
+    });
+    
+    // 测试非Promise值
+    Promise.race([1, 2, 3]).then(value => {
+        console.log(value); // 1 (第一个值会立即resolve)
+    });
 ```
 
 #### 8. 手写防抖函数
@@ -344,9 +427,14 @@ function debounce(fn, wait) {
 
 #### 9. 手写节流函数
 > 函数节流是指规定一个单位时间，在这个单位时间内，只能有一次触发事件的回调函数执行，如果在同一个单位时间内某事件被触发多次，只有一次能生效。节流可以使用在 scroll 函数的事件监听上，通过事件节流来降低事件调用的频率。
+
+**节流 vs 防抖的区别：**
+- 防抖：事件停止触发后延迟执行，重新触发会重置计时器
+- 节流：按固定频率执行，不管触发多频繁都保持固定间隔
+
 ```js
-// 函数节流的实现;
-function throttle(fn, delay) {
+// 方法一：时间戳版本（立即执行）
+function throttle1(fn, delay) {
     let curTime = Date.now();
 
     return function () {
@@ -354,13 +442,108 @@ function throttle(fn, delay) {
             args = arguments,
             nowTime = Date.now();
 
-        // 如果两次时间间隔超过了指定时间，则执行函数。
+        // 如果两次时间间隔超过了指定时间，则执行函数
         if (nowTime - curTime >= delay) {
             curTime = Date.now();
             return fn.apply(context, args);
         }
     };
 }
+
+// 方法二：定时器版本（延迟执行）
+function throttle2(fn, delay) {
+    let timer = null;
+
+    return function () {
+        let context = this,
+            args = arguments;
+
+        if (!timer) {
+            timer = setTimeout(() => {
+                timer = null;
+                fn.apply(context, args);
+            }, delay);
+        }
+    };
+}
+
+// 方法三：完整版本（支持首次立即执行和尾部执行）
+function throttle(fn, delay, options = {}) {
+    let timer = null;
+    let previous = 0;
+    
+    // 默认配置
+    const { leading = true, trailing = true } = options;
+
+    return function () {
+        let context = this;
+        let args = arguments;
+        let now = Date.now();
+
+        // 如果不允许首次立即执行，设置previous为当前时间
+        if (!previous && !leading) previous = now;
+
+        // 计算剩余时间
+        let remaining = delay - (now - previous);
+
+        if (remaining <= 0 || remaining > delay) {
+            // 立即执行
+            if (timer) {
+                clearTimeout(timer);
+                timer = null;
+            }
+            previous = now;
+            fn.apply(context, args);
+        } else if (!timer && trailing) {
+            // 延迟执行
+            timer = setTimeout(() => {
+                previous = !leading ? 0 : Date.now();
+                timer = null;
+                fn.apply(context, args);
+            }, remaining);
+        }
+    };
+}
+
+// 测试用例
+let count = 0;
+const throttledFn = throttle(() => {
+    count++;
+    console.log(`节流函数执行第 ${count} 次，时间: ${new Date().toLocaleTimeString()}`);
+}, 1000);
+
+// 模拟快速调用
+for (let i = 0; i < 10; i++) {
+    setTimeout(() => throttledFn(), i * 100);
+}
+
+// 实际应用场景对比
+console.log('=== 防抖 vs 节流对比 ===');
+
+// 防抖示例：搜索输入
+function debounceSearch(query) {
+    console.log(`搜索: ${query}`);
+}
+const debouncedSearch = debounce(debounceSearch, 500);
+
+// 节流示例：滚动监听
+function throttleScroll() {
+    console.log(`滚动位置: ${window.scrollY}`);
+}
+const throttledScroll = throttle(throttleScroll, 100);
+
+// 使用场景说明：
+// 1. 防抖适用场景：
+//    - 搜索框输入联想
+//    - 表单验证
+//    - 按钮防重复点击
+//    - 窗口resize事件
+
+// 2. 节流适用场景：
+//    - 滚动事件监听
+//    - 鼠标移动事件
+//    - 游戏中的技能冷却
+//    - 拖拽事件
 ```
 
 #### 10. 手写类型判断函数
